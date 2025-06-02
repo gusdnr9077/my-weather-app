@@ -1,44 +1,40 @@
-package com.example.myweatherapp;
-
-import android.os.Bundle;
-import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 public class WeatherActivity extends AppCompatActivity {
 
-    TextView txtWeather, txtClothing;
+    private TextView weatherText;
+    private ImageView clothesImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
 
-        txtWeather = findViewById(R.id.txtWeather);
-        txtClothing = findViewById(R.id.txtClothing);
+        weatherText = findViewById(R.id.weatherText);
+        clothesImage = findViewById(R.id.clothesImage);
 
-        String location = getIntent().getStringExtra("location");
-        int stnId = getStationId(location);
+        Intent intent = getIntent();
+        int stnId = intent.getIntExtra("stnId", -1);
 
-        WeatherApiHelper.getWeatherData(stnId, new WeatherApiHelper.WeatherCallback() {
-            @Override
-            public void onSuccess(String weatherInfo, double avgTemp) {
+        if (stnId != -1) {
+            WeatherApiHelper.getWeatherData(stnId, (weatherInfo, avgTemp) -> {
                 runOnUiThread(() -> {
-                    txtWeather.setText(weatherInfo);
-//                    txtClothing.setText(ClothingRecommender.recommend(avgTemp));
+                    weatherText.setText(weatherInfo);
+                    updateClothingImage(avgTemp);
                 });
-            }
-        });
+            });
+        }
     }
 
-    private int getStationId(String location) {
-        switch (location) {
-            case "서울": return 108;
-            case "부산": return 159;
-            case "대전": return 133;
-            case "광주": return 156;
-            case "강릉": return 105;
-            default: return 108; // 기본은 서울
+    private void updateClothingImage(double temp) {
+        if (temp >= 26) {
+            clothesImage.setImageResource(R.drawable.summer);
+        } else if (temp >= 20) {
+            clothesImage.setImageResource(R.drawable.spring);
+        } else if (temp >= 10) {
+            clothesImage.setImageResource(R.drawable.fall);
+        } else {
+            clothesImage.setImageResource(R.drawable.winter);
         }
     }
 }

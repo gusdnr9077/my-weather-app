@@ -1,49 +1,42 @@
-package com.example.myweatherapp;
-
-import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText editLocation;
-    private TextView txtResult;
+    private EditText locationInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        editLocation = findViewById(R.id.editLocation);
-        txtResult = findViewById(R.id.txtResult);
-        Button btnSearch = findViewById(R.id.btnSearch);
+        locationInput = findViewById(R.id.locationInput);
+        Button checkWeatherBtn = findViewById(R.id.checkWeatherBtn);
 
-        btnSearch.setOnClickListener(v -> {
-            String location = editLocation.getText().toString();
-            int stnId = getStnIdByLocation(location);
-
-            if (stnId == -1) {
-                txtResult.setText("잘못된 지역명입니다.");
-                return;
+        checkWeatherBtn.setOnClickListener(v -> {
+            String location = locationInput.getText().toString().trim();
+            if (!location.isEmpty()) {
+                int stnId = getStnIdByLocation(location);
+                if (stnId != -1) {
+                    Intent intent = new Intent(MainActivity.this, WeatherActivity.class);
+                    intent.putExtra("stnId", stnId);
+                    intent.putExtra("location", location);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "해당 지역의 날씨 정보가 없습니다.", Toast.LENGTH_SHORT).show();
+                }
             }
-
-            WeatherApiHelper.getWeatherData(stnId, (weatherInfo, avgTemp) -> runOnUiThread(() -> {
-                txtResult.setText(weatherInfo);
-            }));
         });
     }
 
+    // 위치 이름을 기상청 stnId로 변환
     private int getStnIdByLocation(String location) {
-        switch (location.trim()) {
+        switch (location) {
             case "서울": return 108;
             case "부산": return 159;
             case "대전": return 133;
-            case "대구": return 143;
             case "광주": return 156;
+            case "대구": return 143;
             case "울산": return 152;
-            case "인천": return 112;
             case "수원": return 119;
             case "춘천": return 101;
             case "강릉": return 105;
